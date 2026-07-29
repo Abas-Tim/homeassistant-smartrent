@@ -2,15 +2,15 @@
   "domain": "smartrent",
   "name": "SmartRent",
   "codeowners": [
-    "@zacherythomas"
+    "@Abas-Tim"
   ],
   "config_flow": true,
   "dependencies": [],
-  "documentation": "https://github.com/ZacheryThomas/homeassistant-smartrent",
+  "documentation": "https://github.com/Abas-Tim/homeassistant-smartrent",
   "iot_class": "cloud_push",
-  "issue_tracker": "https://github.com/ZacheryThomas/homeassistant-smartrent/issues",
+  "issue_tracker": "https://github.com/Abas-Tim/homeassistant-smartrent/issues",
   "requirements": [
-    "smartrent-py==0.5.2"
+    "smartrent-py@git+https://github.com/Abas-Tim/smartrent-py.git@v0.5.2.post1"
   ],
-  "version": "0.5.5"
+  "version": "0.5.6"
 }

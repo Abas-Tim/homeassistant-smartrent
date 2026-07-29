@@ -1,4 +1,5 @@
 """Platform for climate integration."""
+
 import logging
 from typing import Optional
 
@@ -99,7 +100,7 @@ class SmartrentThermostat(ClimateEntity):
     @property
     def temperature_unit(self):
         """Return the unit of measurement."""
-        return UnitOfTemperature.FAHRENHEIT
+        return UnitOfTemperature.CELSIUS
 
     @property
     def current_temperature(self):
@@ -126,17 +127,17 @@ class SmartrentThermostat(ClimateEntity):
     @property
     def target_temperature_step(self):
         """Return the supported step of target temperature."""
-        return 1
+        return 0.5
 
     @property
     def min_temp(self):
         """Return the minimum temperature."""
-        return 60
+        return 15
 
     @property
     def max_temp(self):
         """Return the maximum temperature."""
-        return 90
+        return 30
 
     @property
     def current_humidity(self):
@@ -166,20 +167,30 @@ class SmartrentThermostat(ClimateEntity):
         return SMARTRENT_HVAC_ACTION_TO_HA.get(self.device.get_operating_state())
 
     async def async_set_temperature(self, **kwargs):
+        """Set new target temperature."""
         temperature = kwargs.get(ATTR_TEMPERATURE)
-        if temperature:
-            if self.device.get_mode() == "cool":
+        mode = self.device.get_mode()
+
+        if temperature is not None:
+            temperature = float(temperature)
+
+            if mode == "cool":
                 await self.device.async_set_cooling_setpoint(temperature)
-            else:
+
+            elif mode == "heat":
                 await self.device.async_set_heating_setpoint(temperature)
 
         tt_high = kwargs.get("target_temp_high")
-        if tt_high:
-            await self.device.async_set_cooling_setpoint(tt_high)
+
+        if tt_high is not None:
+            await self.device.async_set_cooling_setpoint(float(tt_high))
 
         tt_low = kwargs.get("target_temp_low")
-        if tt_low:
-            await self.device.async_set_heating_setpoint(tt_low)
+
+        if tt_low is not None:
+            await self.device.async_set_heating_setpoint(float(tt_low))
+
+        self.async_write_ha_state()
 
     @property
     def fan_mode(self):

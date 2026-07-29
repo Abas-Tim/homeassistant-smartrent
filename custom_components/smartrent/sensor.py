@@ -97,7 +97,7 @@ class SmartrentSensor(SensorEntity):
     @property
     def native_unit_of_measurement(self):
         if self._device_class == "temperature":
-            return UnitOfTemperature.FAHRENHEIT
+            return UnitOfTemperature.CELSIUS
         if self._device_class in ["humidity", "battery"]:
             return PERCENTAGE
 
