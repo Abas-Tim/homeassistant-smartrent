@@ -24,19 +24,24 @@ Feel free to star this repository to get notified about the latest features.
 
 ![example screenshot](dashboard_screenshot.png)
 
-## Celsius And Fractional Temperature Changes
+## Fahrenheit Thermostat Setup
 
-This fork adds the thermostat behavior needed for SmartRent installations
-configured in Celsius:
+Configure both the physical thermostat and Home Assistant to use
+**Fahrenheit**. SmartRent's API uses the thermostat's numeric scale, and its
+maintenance automation can treat a normal Celsius value such as `24.5` as an
+abnormally low Fahrenheit reading. That can create repeated "Abnormal
+temperature sensed by Thermostat" service requests.
 
-- Temperatures are represented as Celsius in climate and sensor entities.
-- The target-temperature step is 0.5 degrees.
-- The supported thermostat range is 15 to 30 degrees.
+Set Home Assistant's temperature unit to Fahrenheit under **Settings > System
+> General**. The same unit is then used end to end:
+
+- SmartRent values are displayed unchanged in Fahrenheit.
+- Fahrenheit commands from Home Assistant are sent unchanged to SmartRent.
+- The target-temperature step is 1 degree Fahrenheit.
+- The supported thermostat range is 60 to 90 degrees Fahrenheit.
 - Heat mode writes the heating setpoint and cool mode writes the cooling
   setpoint.
-- Auto mode supports separate fractional low and high targets.
-- Fractional temperatures survive initial state loading, commands, and
-  websocket updates.
+- Auto mode supports separate low and high targets.
 
 The fractional-value fix lives in the matching
 [`Abas-Tim/smartrent-py`](https://github.com/Abas-Tim/smartrent-py) fork. This
@@ -58,7 +63,7 @@ To add the repository manually:
 2. Go to HACS, open the menu, and select **Custom repositories**.
 3. Enter `https://github.com/Abas-Tim/homeassistant-smartrent`.
 4. Select **Integration** as the category and click **Add**.
-5. Open **SmartRent Celsius** and select **Download**.
+5. Open **SmartRent** and select **Download**.
 6. Restart Home Assistant.
 7. Go to **Settings > Devices & services > Add integration**, search for
    **SmartRent**, and enter your SmartRent credentials.
@@ -107,20 +112,27 @@ Go to **Settings > Devices & services > Add integration**, search for
 5. Confirm that `/config/custom_components/smartrent` contains this fork and
    does not contain the old temporary `thermostat_float_patch.py` file.
 
-## Verifying Fractional Temperatures
+## Verifying Thermostat Temperatures
 
 After installation, repeat the checks that exercise each data path:
 
-- Set cooling to 24.5 and confirm Home Assistant, SmartRent, and the physical
-  thermostat remain at 24.5 after a websocket update.
-- Set heating to a half-degree value such as 21.5.
-- In auto mode, set fractional `target_temp_low` and `target_temp_high` values.
-- Change a setpoint on the physical thermostat and confirm Home Assistant keeps
-  the fractional value.
-- Restart Home Assistant with a half-degree target active and confirm the value
-  survives initial state loading.
+- Confirm the physical thermostat is set to Fahrenheit before restarting Home
+  Assistant.
+- Confirm Home Assistant is set to Fahrenheit under **Settings > System >
+  General**.
+- Confirm a physical reading near 77 degrees appears as 77 degrees Fahrenheit
+  in Home Assistant.
+- Set cooling to 76 degrees Fahrenheit in Home Assistant and confirm SmartRent
+  and the physical thermostat receive 76 degrees Fahrenheit.
+- Set heating to a whole-degree Fahrenheit value.
+- In auto mode, set whole-degree `target_temp_low` and `target_temp_high`
+  values.
+- Change a setpoint on the physical thermostat and confirm Home Assistant shows
+  the same Fahrenheit value.
+- Restart Home Assistant and confirm the values survive initial state loading.
 
-The climate entity should report Celsius and `target_temp_step: 0.5`.
+The climate entity should report `temperature_unit: °F` and
+`target_temp_step: 1`.
 
 ## Credits
 
