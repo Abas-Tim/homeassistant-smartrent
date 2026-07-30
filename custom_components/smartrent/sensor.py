@@ -97,8 +97,8 @@ class SmartrentSensor(SensorEntity):
     @property
     def native_unit_of_measurement(self):
         if self._device_class == "temperature":
-            # Home Assistant converts the Fahrenheit API value for display.
-            return UnitOfTemperature.FAHRENHEIT
+            # SmartRent returns Celsius; Home Assistant converts it for display.
+            return UnitOfTemperature.CELSIUS
         if self._device_class in ["humidity", "battery"]:
             return PERCENTAGE
 
