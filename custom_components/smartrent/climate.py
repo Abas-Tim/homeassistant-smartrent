@@ -100,7 +100,9 @@ class SmartrentThermostat(ClimateEntity):
     @property
     def temperature_unit(self):
         """Return the unit of measurement."""
-        return UnitOfTemperature.CELSIUS
+        # SmartRent transports thermostat values in the thermostat's Fahrenheit
+        # scale. Home Assistant converts them to the configured display unit.
+        return UnitOfTemperature.FAHRENHEIT
 
     @property
     def current_temperature(self):
@@ -127,17 +129,17 @@ class SmartrentThermostat(ClimateEntity):
     @property
     def target_temperature_step(self):
         """Return the supported step of target temperature."""
-        return 0.5
+        return 1
 
     @property
     def min_temp(self):
         """Return the minimum temperature."""
-        return 15
+        return 60
 
     @property
     def max_temp(self):
         """Return the maximum temperature."""
-        return 30
+        return 90
 
     @property
     def current_humidity(self):
