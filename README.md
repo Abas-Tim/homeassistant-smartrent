@@ -26,17 +26,28 @@ Feel free to star this repository to get notified about the latest features.
 
 ## Fahrenheit Thermostat Setup
 
+> [!IMPORTANT]
+> Do not control a thermostat with version `0.5.7`. That version treats
+> SmartRent's Celsius API values as Fahrenheit and can drive a requested
+> setpoint to the thermostat's 99 degree Fahrenheit limit. Upgrade to `0.5.8`
+> first.
+
 Configure both the physical thermostat and Home Assistant to use
-**Fahrenheit**. SmartRent's API uses the thermostat's numeric scale, and its
-maintenance automation can treat a normal Celsius value such as `24.5` as an
-abnormally low Fahrenheit reading. That can create repeated "Abnormal
-temperature sensed by Thermostat" service requests.
+**Fahrenheit**. The physical setting avoids SmartRent maintenance automation
+treating a normal Celsius value such as `24.5` as an abnormally low Fahrenheit
+reading and creating repeated "Abnormal temperature sensed by Thermostat"
+service requests.
 
 Set Home Assistant's temperature unit to Fahrenheit under **Settings > System
-> General**. The same unit is then used end to end:
+> General**. SmartRent's resident API still returns and accepts Celsius values
+even with the physical thermostat set to Fahrenheit, so the integration lets
+Home Assistant convert at the API boundary:
 
-- SmartRent values are displayed unchanged in Fahrenheit.
-- Fahrenheit commands from Home Assistant are sent unchanged to SmartRent.
+- A SmartRent reading of 24 degrees Celsius is displayed near 75 degrees
+  Fahrenheit.
+- A 75 degree Fahrenheit command is converted and sent to SmartRent as 24
+  degrees Celsius.
+- Outbound values are rounded to SmartRent's 0.5 degree Celsius resolution.
 - The target-temperature step is 1 degree Fahrenheit.
 - The supported thermostat range is 60 to 90 degrees Fahrenheit.
 - Heat mode writes the heating setpoint and cool mode writes the cooling
@@ -122,8 +133,9 @@ After installation, repeat the checks that exercise each data path:
   General**.
 - Confirm a physical reading near 77 degrees appears as 77 degrees Fahrenheit
   in Home Assistant.
-- Set cooling to 76 degrees Fahrenheit in Home Assistant and confirm SmartRent
-  and the physical thermostat receive 76 degrees Fahrenheit.
+- Set cooling to 75 degrees Fahrenheit in Home Assistant and confirm the
+  physical thermostat receives approximately 75 degrees Fahrenheit, not 99
+  degrees Fahrenheit.
 - Set heating to a whole-degree Fahrenheit value.
 - In auto mode, set whole-degree `target_temp_low` and `target_temp_high`
   values.

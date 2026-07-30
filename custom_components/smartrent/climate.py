@@ -42,6 +42,12 @@ SMARTRENT_FAN_TO_HA = {value: key for key, value in HA_FAN_TO_SMART_RENT.items()
 
 SUPPORT_FAN = [FAN_ON, FAN_AUTO]
 SUPPORT_HVAC = [HVACMode.HEAT, HVACMode.COOL, HVACMode.OFF, HVACMode.HEAT_COOL]
+SMARTRENT_TEMPERATURE_STEP = 0.5
+
+
+def _normalize_smartrent_temperature(value: float) -> float:
+    """Round a Celsius setpoint to SmartRent's supported resolution."""
+    return round(float(value) / SMARTRENT_TEMPERATURE_STEP) * SMARTRENT_TEMPERATURE_STEP
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
@@ -100,9 +106,9 @@ class SmartrentThermostat(ClimateEntity):
     @property
     def temperature_unit(self):
         """Return the unit of measurement."""
-        # SmartRent transports thermostat values in the thermostat's Fahrenheit
-        # scale. Home Assistant converts them to the configured display unit.
-        return UnitOfTemperature.FAHRENHEIT
+        # SmartRent normalizes API values to Celsius even when the thermostat's
+        # display is configured for Fahrenheit.
+        return UnitOfTemperature.CELSIUS
 
     @property
     def current_temperature(self):
@@ -129,17 +135,18 @@ class SmartrentThermostat(ClimateEntity):
     @property
     def target_temperature_step(self):
         """Return the supported step of target temperature."""
+        # Home Assistant exposes this capability in its configured display unit.
         return 1
 
     @property
     def min_temp(self):
         """Return the minimum temperature."""
-        return 60
+        return (60 - 32) / 1.8
 
     @property
     def max_temp(self):
         """Return the maximum temperature."""
-        return 90
+        return (90 - 32) / 1.8
 
     @property
     def current_humidity(self):
@@ -174,7 +181,7 @@ class SmartrentThermostat(ClimateEntity):
         mode = self.device.get_mode()
 
         if temperature is not None:
-            temperature = float(temperature)
+            temperature = _normalize_smartrent_temperature(temperature)
 
             if mode == "cool":
                 await self.device.async_set_cooling_setpoint(temperature)
@@ -185,12 +192,16 @@ class SmartrentThermostat(ClimateEntity):
         tt_high = kwargs.get("target_temp_high")
 
         if tt_high is not None:
-            await self.device.async_set_cooling_setpoint(float(tt_high))
+            await self.device.async_set_cooling_setpoint(
+                _normalize_smartrent_temperature(tt_high)
+            )
 
         tt_low = kwargs.get("target_temp_low")
 
         if tt_low is not None:
-            await self.device.async_set_heating_setpoint(float(tt_low))
+            await self.device.async_set_heating_setpoint(
+                _normalize_smartrent_temperature(tt_low)
+            )
 
         self.async_write_ha_state()
 
